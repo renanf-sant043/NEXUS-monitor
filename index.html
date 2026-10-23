@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080b12">
+    <title>NEXUS // PC Monitor</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #080b12;
+            --panel: #101621;
+            --panel2: #0c111a;
+            --border: #202c3c;
+            --text: #e6edf7;
+            --muted: #7d8ca3;
+            --cyan: #54e7f2;
+            --green: #50f5a4;
+            --red: #ff647c;
+            --yellow: #ffc66d;
+            --purple: #ae92ff;
+            --mono: 'IBM Plex Mono', monospace;
+            --sans: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 50% -20%, #182b42 0%, transparent 60%),
+                var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 13px;
+        }
+
+        button, input, select { font: inherit; }
+
+        button { cursor: pointer; }
+
+        .app { max-width: 1500px; margin: auto; padding: 26px; }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 23px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 13px; }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid #285365;
+            border-radius: 12px;
+            background: #102633;
+            color: var(--cyan);
+            font-size: 22px;
+        }
+
+        h1 { margin: 0; font-size: 19px; letter-spacing: 2px; }
+        .subtitle { color: var(--muted); font-size: 10px; margin-top: 5px; letter-spacing: 1.5px; }
+
+        .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 9px 13px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+
+        .dot.green { background: var(--green); box-shadow: 0 0 10px #50f5a477; }
+        .dot.red { background: var(--red); }
+
+        .button {
+            padding: 10px 14px;
+            color: var(--text);
+            background: #182333;
+            border: 1px solid #304157;
+            border-radius: 7px;
+            transition: .2s;
+        }
+
+        .button:hover { border-color: var(--cyan); }
+        .button.primary { background: #10333b; border-color: #286b78; color: var(--cyan); }
+        .button.danger { color: var(--red); border-color: #62303d; background: #26141b; }
+        .button.small { padding: 7px 10px; font-size: 11px; }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0 0 13px;
+            gap: 10px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 11px;
+            letter-spacing: 1.8px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .eyebrow { color: var(--muted); font: 10px var(--mono); }
+
+        .connection-panel {
+            border: 1px solid var(--border);
+            background: linear-gradient(130deg, #101b29, #0c111a);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .connection-grid {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) minmax(250px, 1.5fr) auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+
+        input, select {
+            width: 100%;
+            padding: 11px 12px;
+            background: #080d15;
+            color: var(--text);
+            border: 1px solid #29374a;
+            border-radius: 7px;
+            outline: none;
+        }
+
+        input:focus, select:focus { border-color: var(--cyan); }
+
+        .help {
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.7;
+            margin-top: 14px;
+        }
+
+        .help strong { color: var(--cyan); font-weight: 500; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .metric {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 18px;
+            min-width: 0;
+        }
+
+        .metric-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+        .metric-label { color: var(--muted); font-size: 11px; }
+
+        .metric-icon {
+            display: grid; place-items: center;
+            width: 31px; height: 31px;
+            border-radius: 8px; background: #182433;
+            color: var(--cyan); font-size: 15px;
+        }
+
+        .metric-value {
+            font: 500 27px var(--mono);
+            letter-spacing: -1.5px;
+            margin: 20px 0 7px;
+            white-space: nowrap;
+        }
+
+        .metric-unit { font-size: 12px; color: var(--muted); letter-spacing: 0; }
+
+        .metric-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 10px; }
+
+        .progress { height: 4px; background: #263242; border-radius: 10px; overflow: hidden; margin: 15px 0 12px; }
+        .progress span { display: block; height: 100%; width: 0%; background: var(--cyan); transition: width .5s; }
+        .progress.green span { background: var(--green); }
+        .progress.yellow span { background: var(--yellow); }
+        .progress.purple span { background: var(--purple); }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+            gap: 15px;
+            margin-top: 18px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 19px;
+            min-width: 0;
+        }
+
+        .chart-wrap { position: relative; height: 220px; margin-top: 15px; }
+        canvas { width: 100%; height: 100%; display: block; }
+
+        .chart-legend { display: flex; gap: 17px; color: var(--muted); font-size: 10px; }
+        .legend-dot { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 6px; }
+
+        .system-info { display: grid; gap: 0; margin-top: 10px; }
+
+        .info-row {
+            display: flex; justify-content: space-between; gap: 12px;
+            padding: 13px 0; border-bottom: 1px solid var(--border);
+        }
+
+        .info-row:last-child { border: 0; }
+        .info-label { color: var(--muted); }
+        .info-value { font-family: var(--mono); text-align: right; overflow-wrap: anywhere; }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+        th { color: var(--muted); font-weight: 500; font-size: 10px; letter-spacing: 1px; }
+        th, td { padding: 13px 9px; border-bottom: 1px solid var(--border); }
+        td { font: 11px var(--mono); }
+        tbody tr:last-child td { border-bottom: 0; }
+
+        .tag { padding: 4px 7px; border-radius: 4px; font-size: 9px; }
+        .tag.ok { background: #123427; color: var(--green); }
+        .tag.warn { background: #392c18; color: var(--yellow); }
+        .tag.off { background: #29212b; color: var(--muted); }
+
+        .terminal {
+            height: 170px;
+            overflow: auto;
+            background: #080c12;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 12px;
+            font: 10px/1.9 var(--mono);
+            color: #92a5bb;
+        }
+
+        .log-line { overflow-wrap: anywhere; }
+        .log-time { color: #52667d; }
+        .log-info { color: var(--cyan); }
+        .log-success { color: var(--green); }
+        .log-error { color: var(--red); }
+        .log-warn { color: var(--yellow); }
+
+        .notice {
+            padding: 12px;
+            border: 1px solid #4b3e26;
+            background: #1d1912;
+            border-radius: 7px;
+            color: #d5bd8c;
+            line-height: 1.6;
+            font-size: 11px;
+            margin-top: 15px;
+        }
+
+        footer {
+            display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+            border-top: 1px solid var(--border);
+            margin-top: 25px; padding-top: 18px;
+            color: var(--muted); font: 10px var(--mono);
+        }
+
+        .muted { color: var(--muted); }
+        .mono { font-family: var(--mono); }
+        .hidden { display: none !important; }
+
+        @media (max-width: 1000px) {
+            .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .connection-grid { grid-template-columns: 1fr 1fr; }
+            .connection-grid .connect-actions { grid-column: 1 / -1; }
+            .content-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .app { padding: 15px; }
+            header { align-items: flex-start; }
+            .header-right { justify-content: flex-end; }
+            .header-right .status-pill { display: none; }
+            .brand-icon { width: 37px; height: 37px; }
+            h1 { font-size: 16px; }
+            .grid { gap: 9px; }
+            .metric { padding: 12px; }
+            .metric-value { font-size: 21px; }
+            .metric-label { font-size: 10px; }
+            .connection-grid, .bottom-grid { grid-template-columns: 1fr; }
+            .connection-grid .connect-actions { grid-column: auto; }
+            .panel, .connection-panel { padding: 14px; }
+            .chart-wrap { height: 190px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+    <header>
+        <div class="brand">
+            <div class="brand-icon">⌘</div>
+            <div>
+                <h1>NEXUS <span style="color:var(--cyan)">MONITOR</span></h1>
+                <div class="subtitle">SYSTEM INTELLIGENCE / V 1.0.0</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-pill">
+                <span class="dot" id="headerDot"></span>
+                <span id="headerStatus">AGUARDANDO CONEXÃO</span>
+            </div>
+            <button class="button small" id="refreshBtn">↻ Atualizar</button>
+        </div>
+    </header>
+
+    <section class="connection-panel">
+        <div class="section-heading">
+            <h2>01 / Conexão com o computador</h2>
+            <span class="eyebrow" id="connectionMode">MODO DEMONSTRAÇÃO</span>
+        </div>
+
+        <div class="connection-grid">
+            <div>
+                <label for="endpoint">Endereço da API do agente Windows</label>
+                <input id="endpoint" type="url" value="http://127.0.0.1:5000" placeholder="http://127.0.0.1:5000">
+            </div>
+            <div>
+                <label for="apiKey">Chave de acesso (se configurada no agente)</label>
+                <input id="apiKey" type="password" placeholder="Digite sua chave de acesso">
+            </div>
+            <div class="connect-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="button primary" id="connectBtn">⟶ Conectar</button>
+                <button class="button danger hidden" id="disconnectBtn">Desconectar</button>
+            </div>
+        </div>
+
+        <div class="help">
+            <strong>Como funciona:</strong> o HTML apresenta os dados recebidos de uma API executada no Windows.
+            O navegador, sozinho, não tem acesso direto à utilização real de CPU, RAM, temperatura e processos.
+            <br>
+            <span id="connectionHelp">Os valores atuais são simulados. Conecte um agente local compatível para exibir métricas reais.</span>
+        </div>
+    </section>
+
+    <div class="section-heading">
+        <h2>02 / Desempenho em tempo real</h2>
+        <span class="eyebrow" id="lastUpdated">ÚLTIMA LEITURA: --:--:--</span>
+    </div>
+
+    <section class="grid">
+        <article class="metric">
+            <div class="metric-top">
+                <span class="metric-label">Uso de CPU</span>
+                <span class="metric-icon">◈</span>
+            </div>
+            <div class="metric-value"><span id="cpuValue">--</span><span class="metric-unit"> %</span></div>
+            <div class="progress"><span id="cpuBar"></span></div>
+            <div class="metric-foot"><span>Processador</span><span id="cpuState">Sem dados</span></div>
+        </article>
+
+        <article class="metric">
+            <div class="metric-top">
+                <span class="metric-label">Memória RAM</span>
+                <span class="metric-icon" style="color:var(--purple)">▤</span>
+            </div>
+            <div class="metric-value"><span id="ramValue">--</span><span class="metric-unit"> %</span></div>
+            <div class="progress purple"><span id="ramBar"></span></div>
+            <div class="metric-foot"><span id="ramDetail">-- / -- GB</span><span id="ramState">Sem dados</span></div>
+        </article>
+
+        <article class="metric">
+            <div class="metric-top">
+                <span class="metric-label">Disco principal</span>
+                <span class="metric-icon" style="color:var(--yellow)">▣</span>
+            </div>
+            <div class="metric-value"><span id="diskValue">--</span><span class="metric-unit"> %</span></div>
+            <div class="progress yellow"><span id="diskBar"></span></div>
+            <div class="metric-foot"><span id="diskDetail">Espaço utilizado</span><span id="diskState">Sem dados</span></div>
+        </article>
+
+        <article class="metric">
+            <div class="metric-top">
+                <span class="metric-label">Rede</span>
+                <span class="metric-icon" style="color:var(--green)">⌁</span>
+            </div>
+            <div class="metric-value"><span id="networkValue">--</span><span class="metric-unit"> MB/s</span></div>
+            <div class="progress green"><span id="networkBar"></span></div>
+            <div class="metric-foot"><span>Recebimento</span><span id="networkState">Sem dados</span></div>
+        </article>
+    </section>
+
+    <section class="content-grid">
+        <article class="panel">
+            <div class="section-heading">
+                <h2>Histórico de utilização</h2>
+                <div class="chart-legend">
+                    <span><i class="legend-dot" style="background:var(--cyan)"></i>CPU</span>
+                    <span><i class="legend-dot" style="background:var(--purple)"></i>RAM</span>
+                </div>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="performanceChart" aria-label="Gráfico de utilização de CPU e RAM"></canvas>
+            </div>
+            <div class="metric-foot">
+                <span>Janela de histórico: últimas 30 leituras</span>
+                <span id="chartMode">SIMULAÇÃO</span>
+            </div>
+        </article>
+
+        <article class="panel">
+            <div class="section-heading">
+                <h2>Informações do sistema</h2>
+                <span class="eyebrow">HOST INFO</span>
+            </div>
+            <div class="system-info">
+                <div class="info-row"><span class="info-label">Computador</span><span class="info-value" id="hostName">Não conectado</span></div>
+                <div class="info-row"><span class="info-label">Sistema operacional</span><span class="info-value" id="osName">Windows / --</span></div>
+                <div class="info-row"><span class="info-label">Processador</span><span class="info-value" id="processorName">--</span></div>
+                <div class="info-row"><span class="info-label">Núcleos lógicos</span><span class="info-value" id="cpuCores">--</span></div>
+                <div class="info-row"><span class="info-label">Memória total</span><span class="info-value" id="totalRam">--</span></div>
+                <div class="info-row"><span class="info-label">Tempo ligado</span><span class="info-value" id="uptime">--</span></div>
+            </div>
+        </article>
+    </section>
+
+    <section class="bottom-grid">
+        <article class="panel">
+            <div class="section-heading">
+                <h2>Processos principais</h2>
+                <span class="eyebrow" id="processCount">0 PROCESSOS</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>PROCESSO</th><th>CPU %</th><th>RAM MB</th><th>STATUS</th></tr>
+                    </thead>
+                    <tbody id="processTable">
+                        <tr><td colspan="4" class="muted" style="text-align:center;padding:25px">Aguardando dados do agente Windows...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="help">Os processos reais só serão exibidos quando o agente fornecer essa informação.</div>
+        </article>
+
+        <article class="panel">
+            <div class="section-heading">
+                <h2>Eventos do sistema</h2>
+                <button class="button small" id="clearLogsBtn">Limpar</button>
+            </div>
+            <div class="terminal" id="terminal" aria-live="polite"></div>
+            <div class="notice">
+                <strong>Segurança:</strong> use apenas no seu computador ou em máquinas que você tem autorização para monitorar.
+                Não exponha uma API sem autenticação à internet. O monitor não executa comandos remotos.
+            </div>
+        </article>
+    </section>
+
+    <footer>
+        <span>NEXUS MONITOR // CLIENTE WEB</span>
+        <span id="footerConnection">API: DESCONECTADA</span>
+        <span>ATUALIZAÇÃO AUTOMÁTICA: 2,5 S</span>
+    </footer>
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    // ============================================================
+    // CONFIGURAÇÃO
+    // O agente Windows deverá responder a GET /api/metrics
+    // com JSON. O formato esperado está documentado no fim do script.
+    // ============================================================
+
+    const POLL_INTERVAL = 2500;
+    const HISTORY_LIMIT = 30;
+
+    const $ = id => document.getElementById(id);
+
+    const state = {
+        connected: false,
+        demo: true,
+        timer: null,
+        failures: 0,
+        history: [],
+        previousNetwork: null,
+        demoTick: 0
+    };
+
+    const clamp = (value, min = 0, max = 100) =>
+        Math.max(min, Math.min(max, Number(value) || 0));
+
+    function formatNumber(value, decimals = 1) {
+        const n = Number(value);
+        return Number.isFinite(n)
+            ? n.toLocaleString("pt-BR", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            })
+            : "--";
+    }
+
+    function formatUptime(seconds) {
+        if (!Number.isFinite(Number(seconds))) return "--";
+        const s = Math.max(0, Math.floor(Number(seconds)));
+        const days = Math.floor(s / 86400);
+        const hours = Math.floor((s % 86400) / 3600);
+        const minutes = Math.floor((s % 3600) / 60);
+        return `${days}d ${hours}h ${minutes}m`;
+    }
+
+    function log(message, type = "info") {
+        const terminal = $("terminal");
+        const line = document.createElement("div");
+        line.className = "log-line";
+
+        const time = document.createElement("span");
+        time.className = "log-time";
+        time.textContent = `[${new Date().toLocaleTimeString("pt-BR")}] `;
+
+        const text = document.createElement("span");
+        text.className = `log-${type}`;
+        text.textContent = message;
+
+        line.append(time, text);
+        terminal.appendChild(line);
+
+        while (terminal.children.length > 100) {
+            terminal.removeChild(terminal.firstChild);
+        }
+
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function setConnectionUI(connected, demo = false) {
+        state.connected = connected;
+        state.demo = demo;
+
+        $("headerDot").className = `dot ${connected ? "green" : "red"}`;
+        $("headerStatus").textContent = connected
+            ? (demo ? "MODO DEMONSTRAÇÃO" : "CONECTADO")
+            : "DESCONECTADO";
+
+        $("connectionMode").textContent = demo
+            ? "MODO DEMONSTRAÇÃO"
+            : connected ? "API WINDOWS ATIVA" : "AGUARDANDO CONEXÃO";
+
+        $("connectBtn").classList.toggle("hidden", connected && !demo);
+        $("disconnectBtn").classList.toggle("hidden", !connected || demo);
+
+        $("footerConnection").textContent = connected
+            ? (demo ? "API: DEMONSTRAÇÃO" : "API: CONECTADA")
+            : "API: DESCONECTADA";
+
+        $("chartMode").textContent = demo ? "SIMULAÇÃO" : "DADOS REAIS";
+        $("connectionHelp").textContent = demo
+            ? "Os valores atuais são simulados. Conecte um agente local compatível para exibir métricas reais."
+            : "Conexão estabelecida. Os valores apresentados vêm da API configurada.";
+    }
+
+    function setMetric(id, value, barValue, detail, stateText) {
+        $(id + "Value").textContent = formatNumber(value);
+        $(id + "Bar").style.width = clamp(barValue) + "%";
+
+        if (detail !== undefined && $(id + "Detail")) {
+            $(id + "Detail").textContent = detail;
+        }
+
+        if (stateText !== undefined && $(id + "State")) {
+            $(id + "State").textContent = stateText;
+        }
+    }
+
+    function utilizationLabel(value) {
+        if (value >= 90) return "Muito alto";
+        if (value >= 70) return "Elevado";
+        if (value >= 40) return "Moderado";
+        return "Normal";
+    }
+
+    function renderProcesses(processes) {
+        const tbody = $("processTable");
+        tbody.replaceChildren();
+
+        if (!Array.isArray(processes) || processes.length === 0) {
+            const row = tbody.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 4;
+            cell.className = "muted";
+            cell.style.textAlign = "center";
+            cell.textContent = "Nenhum processo informado pela API.";
+            $("processCount").textContent = "0 PROCESSOS";
+            return;
+        }
+
+        const sorted = [...processes]
+            .sort((a, b) => Number(b.ram_mb || 0) - Number(a.ram_mb || 0))
+            .slice(0, 8);
+
+        for (const process of sorted) {
+            const row = tbody.insertRow();
+
+            const name = row.insertCell();
+            name.textContent = String(process.name || "Processo desconhecido");
+
+            const cpu = row.insertCell();
+            cpu.textContent = formatNumber(process.cpu_percent ?? 0);
+
+            const ram = row.insertCell();
+            ram.textContent = formatNumber(process.ram_mb ?? 0, 0);
+
+            const status = row.insertCell();
+            const tag = document.createElement("span");
+            tag.className = "tag " + (
+                Number(process.cpu_percent || 0) > 80 ? "warn" : "ok"
+            );
+            tag.textContent = Number(process.cpu_percent || 0) > 80
+                ? "ATIVO"
+                : "OK";
+            status.appendChild(tag);
+        }
+
+        $("processCount").textContent = `${processes.length} PROCESSOS`;
+    }
+
+    function renderMetrics(data) {
+        const cpu = clamp(data.cpu_percent);
+        const ram = clamp(data.ram_percent);
+        const disk = clamp(data.disk_percent);
+        const network = Math.max(0, Number(data.network_rx_mbps) || 0);
+
+        setMetric("cpu", cpu, cpu, undefined, utilizationLabel(cpu));
+        setMetric("ram", ram, ram,
+            `${formatNumber(data.ram_used_gb)} / ${formatNumber(data.ram_total_gb)} GB`,
+            utilizationLabel(ram));
+
+        setMetric("disk", disk, disk,
+            `${formatNumber(data.disk_used_gb)} / ${formatNumber(data.disk_total_gb)} GB`,
+            utilizationLabel(disk));
+
+        setMetric("network", network, Math.min(network * 10, 100),
+            undefined, "Recebimento");
+
+        $("hostName").textContent = data.hostname || "--";
+        $("osName").textContent = data.os || "Windows";
+        $("processorName").textContent = data.cpu_name || "--";
+        $("cpuCores").textContent = data.logical_cores ?? "--";
+        $("totalRam").textContent = data.ram_total_gb != null
+            ? `${formatNumber(data.ram_total_gb)} GB`
+            : "--";
+        $("uptime").textContent = formatUptime(data.uptime_seconds);
+
+        $("lastUpdated").textContent =
+            "ÚLTIMA LEITURA: " + new Date().toLocaleTimeString("pt-BR");
+
+        state.history.push({
+            cpu,
+            ram,
+            time: new Date()
+        });
+
+        if (state.history.length > HISTORY_LIMIT) {
+            state.history.shift();
+        }
+
+        drawChart();
+        renderProcesses(data.processes || []);
+    }
+
+    // Simulação visual: nenhum destes valores representa o PC real.
+    function getDemoData() {
+        state.demoTick++;
+
+        const t = state.demoTick;
+        const wave = Math.sin(t / 3.4);
+        const wave2 = Math.cos(t / 5.1);
+
+        const cpu = clamp(24 + wave * 12 + Math.random() * 8);
+        const ram = clamp(52 + wave2 * 4 + Math.random() * 2);
+        const disk = 63;
+
+        return {
+            cpu_percent: cpu,
+            ram_percent: ram,
+            disk_percent: disk,
+            network_rx_mbps: Math.max(0.1, 1.2 + Math.random() * 5),
+            ram_used_gb: 8.4,
+            ram_total_gb: 16,
+            disk_used_gb: 320,
+            disk_total_gb: 512,
+            hostname: "DEMO-PC",
+            os: "Windows (simulado)",
+            cpu_name: "CPU de demonstração",
+            logical_cores: 8,
+            uptime_seconds: 86400 + t * 3,
+            processes: [
+                { name: "chrome.exe", cpu_percent: 5.2, ram_mb: 1250 },
+                { name: "Code.exe", cpu_percent: 3.7, ram_mb: 840 },
+                { name: "System", cpu_percent: 1.1, ram_mb: 240 },
+                { name: "explorer.exe", cpu_percent: 0.8, ram_mb: 180 }
+            ]
+        };
+    }
+
+    async function fetchRealMetrics() {
+        const endpoint = $("endpoint").value.trim().replace(/\/+$/, "");
+
+        if (!endpoint) throw new Error("Informe o endereço da API.");
+
+        const headers = { "Accept": "application/json" };
+        const apiKey = $("apiKey").value.trim();
+
+        // A API deve implementar essa autenticação caso utilize chave.
+        if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+
+        try {
+            const response = await fetch(endpoint + "/api/metrics", {
+                method: "GET",
+                headers,
+                signal: controller.signal,
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error(`A API respondeu com HTTP ${response.status}.`);
+            }
+
+            const data = await response.json();
+
+            if (typeof data.cpu_percent !== "number" ||
+                typeof data.ram_percent !== "number") {
+                throw new Error("Resposta inválida: CPU/RAM ausentes.");
+            }
+
+            return data;
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+
+    async function connect() {
+        clearInterval(state.timer);
+        state.failures = 0;
+
+        log("Tentando conectar à API do Windows...", "info");
+
+        try {
+            const data = await fetchRealMetrics();
+            setConnectionUI(true, false);
+            renderMetrics(data);
+            log("Conexão com a API estabelecida.", "success");
+
+            state.timer = setInterval(pollRealMetrics, POLL_INTERVAL);
+        } catch (error) {
+            setConnectionUI(false, false);
+            log(`Falha na conexão: ${error.message}`, "error");
+            log("Verifique se o agente está ativo e se a API permite acesso CORS.", "warn");
+        }
+    }
+
+    async function pollRealMetrics() {
+        try {
+            const data = await fetchRealMetrics();
+            state.failures = 0;
+
+            if (!state.connected || state.demo) {
+                setConnectionUI(true, false);
+                log("Conexão restabelecida.", "success");
+            }
+
+            renderMetrics(data);
+        } catch (error) {
+            state.failures++;
+
+            if (state.failures === 1) {
+                log("Não foi possível atualizar as métricas.", "warn");
+            }
+
+            if (state.failures >= 3) {
+                clearInterval(state.timer);
+                setConnectionUI(false, false);
+                log("Conexão interrompida após 3 falhas consecutivas.", "error");
+            }
+        }
+    }
+
+    function disconnect() {
+        clearInterval(state.timer);
+        state.timer = null;
+        setConnectionUI(false, false);
+        log("Monitoramento desconectado pelo usuário.", "warn");
+    }
+
+    function drawChart() {
+        const canvas = $("performanceChart");
+        const ctx = canvas.getContext("2d");
+        const rect = canvas.getBoundingClientRect();
+
+        if (!rect.width || !rect.height) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.scale(dpr, dpr);
+
+        const w = rect.width;
+        const h = rect.height;
+        const left = 31, right = 8, top = 12, bottom = 23;
+        const chartW = w - left - right;
+        const chartH = h - top - bottom;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.font = "10px IBM Plex Mono, monospace";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+
+        for (let i = 0; i <= 4; i++) {
+            const y = top + chartH * i / 4;
+            ctx.strokeStyle = "#263242";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(left, y);
+            ctx.lineTo(w - right, y);
+            ctx.stroke();
+
+            ctx.fillStyle = "#73839a";
+            ctx.fillText(`${100 - i * 25}%`, left - 7, y);
+        }
+
+        const series = [
+            { key: "cpu", color: "#54e7f2" },
+            { key: "ram", color: "#ae92ff" }
+        ];
+
+        for (const s of series) {
+            const points = state.history;
+
+            if (points.length < 1) continue;
+
+            ctx.beginPath();
+
+            points.forEach((p, i) => {
+                const x = left + (points.length === 1
+                    ? chartW
+                    : chartW * i / (HISTORY_LIMIT - 1));
+                const y = top + chartH * (1 - clamp(p[s.key]) / 100);
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.strokeStyle = s.color;
+            ctx.lineWidth = 2;
+            ctx.lineJoin = "round";
+            ctx.stroke();
+        }
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "#73839a";
+        ctx.fillText("LEITURAS RECENTES", left, h - 4);
+        ctx.textAlign = "right";
+        ctx.fillText("100%", w - right, h - 4);
+    }
+
+    function updateDemo() {
+        if (!state.demo) return;
+        renderMetrics(getDemoData());
+    }
+
+    $("connectBtn").addEventListener("click", connect);
+    $("disconnectBtn").addEventListener("click", disconnect);
+
+    $("refreshBtn").addEventListener("click", () => {
+        if (state.connected && !state.demo) {
+            pollRealMetrics();
+        } else {
+            updateDemo();
+            log("Dados de demonstração atualizados; não são leituras reais.", "info");
+        }
+    });
+
+    $("clearLogsBtn").addEventListener("click", () => {
+        $("terminal").replaceChildren();
+        log("Terminal limpo.", "info");
+    });
+
+    window.addEventListener("resize", drawChart);
+
+    // Contrato esperado para GET /api/metrics:
+    //
+    // {
+    //   "cpu_percent": 21.5,
+    //   "ram_percent": 57.2,
+    //   "ram_used_gb": 9.1,
+    //   "ram_total_gb": 16,
+    //   "disk_percent": 63.0,
+    //   "disk_used_gb": 320,
+    //   "disk_total_gb": 512,
+    //   "network_rx_mbps": 3.2,
+    //   "hostname": "MEU-PC",
+    //   "os": "Windows 11",
+    //   "cpu_name": "Nome do processador",
+    //   "logical_cores": 12,
+    //   "uptime_seconds": 3600,
+    //   "processes": [
+    //     {"name": "chrome.exe", "cpu_percent": 5.2, "ram_mb": 800}
+    //   ]
+    // }
+    //
+    // Observações:
+    // 1. A API e o agente Windows precisam ser implementados separadamente.
+    // 2. CORS precisa permitir a origem desta página.
+    // 3. HTTP localhost pode funcionar em cenários locais, mas acessar a API
+    //    a partir de outro dispositivo geralmente exige HTTPS e configuração
+    //    segura do agente.
+    // 4. Não habilite execução de comandos arbitrários pela API.
+
+    setConnectionUI(true, true);
+    log("NEXUS Monitor iniciado.", "success");
+    log("Modo demonstração ativo. Nenhum dado real foi coletado.", "warn");
+    log("Aguardando configuração do agente Windows.", "info");
+
+    updateDemo();
+    state.timer = setInterval(updateDemo, POLL_INTERVAL);
+})();
+</script>
+</body>
+</html>
