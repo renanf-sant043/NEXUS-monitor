@@ -2,7 +2,15 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NEXUS">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#080b12">
 <title>NEXUS // PC Monitor</title>
 <style>
@@ -18,13 +26,15 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:left;white-space:nowrap}th{color:var(--muted);font-weight:500;font-size:10px;letter-spacing:1px}th,td{padding:13px 9px;border-bottom:1px solid var(--border)}td{font:11px var(--mono)}tbody tr:last-child td{border-bottom:0}.tag{padding:4px 7px;border-radius:4px;font-size:9px}.tag.ok{background:#123427;color:var(--green)}.tag.warn{background:#392c18;color:var(--yellow)}.tag.off{background:#29212b;color:var(--muted)}
 .terminal{height:170px;overflow:auto;background:#080c12;border:1px solid var(--border);border-radius:7px;padding:12px;font:10px/1.9 var(--mono);color:#92a5bb}.log-line{overflow-wrap:anywhere}.log-time{color:#52667d}.log-info{color:var(--cyan)}.log-success{color:var(--green)}.log-error{color:var(--red)}.log-warn{color:var(--yellow)}.notice{padding:12px;border:1px solid #4b3e26;background:#1d1912;border-radius:7px;color:#d5bd8c;line-height:1.6;font-size:11px;margin-top:15px}footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid var(--border);margin-top:25px;padding-top:18px;color:var(--muted);font:10px var(--mono)}.muted{color:var(--muted)}
 @media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid{grid-template-columns:1fr}}@media(max-width:600px){.app{padding:15px}header{align-items:flex-start}.header-right{justify-content:flex-end}.header-right .status-pill{display:none}.brand-icon{width:37px;height:37px}h1{font-size:16px}.grid{gap:9px}.metric{padding:12px}.metric-value{font-size:21px}.metric-label{font-size:10px}.connection-grid,.bottom-grid{grid-template-columns:1fr}.connection-grid .connect-actions{grid-column:auto}.panel,.connection-panel{padding:14px}.chart-wrap{height:190px}}
+@media(display-mode:standalone){.app{padding-top:calc(15px + env(safe-area-inset-top));padding-bottom:calc(15px + env(safe-area-inset-bottom))}}
+.install-hint{margin-top:10px;padding:10px 12px;border:1px solid #285365;background:#0d222b;border-radius:7px;color:var(--cyan);font-size:11px;line-height:1.6}
 </style>
 </head>
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="brand-icon">⌘</div><div><h1>NEXUS <span style="color:var(--cyan)">MONITOR</span></h1><div class="subtitle">SYSTEM INTELLIGENCE / V 2.0.0</div></div></div>
- <div class="header-right"><div class="status-pill"><span class="dot" id="headerDot"></span><span id="headerStatus">AGUARDANDO CONEXÃO</span></div><button class="button small" id="refreshBtn">↻ Atualizar</button></div>
+ <div class="brand"><div class="brand-icon">⌘</div><div><h1>NEXUS <span style="color:var(--cyan)">MONITOR</span></h1><div class="subtitle">SYSTEM INTELLIGENCE / V 2.1.0</div></div></div>
+ <div class="header-right"><div class="status-pill"><span class="dot" id="headerDot"></span><span id="headerStatus">AGUARDANDO CONEXÃO</span></div><button class="button small primary hidden" id="installBtn">⤓ Instalar app</button><button class="button small" id="refreshBtn">↻ Atualizar</button></div>
 </header>
 
 <section class="connection-panel">
@@ -33,7 +43,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
   <div><label for="pcSelect">Computadores cadastrados</label><select id="pcSelect"><option value="">Selecione um computador...</option></select></div>
   <div><label for="pcName">Nome do computador</label><input id="pcName" type="text" placeholder="Ex.: PC principal"></div>
   <div><label for="endpoint">Endereço do agente (app.py)</label><input id="endpoint" type="text" inputmode="url" spellcheck="false" value="http://127.0.0.1:5000" placeholder="http://192.168.1.100:5000"></div>
-  <div><label for="apiKey">Chave de acesso (só para acessar de outro aparelho)</label><input id="apiKey" type="text" autocomplete="off" placeholder="Copie da janela do app.py"></div>
+  <div><label for="apiKey">Chave de acesso (só para acessar de outro aparelho)</label><div style="display:flex;gap:8px"><input id="apiKey" type="password" autocomplete="off" placeholder="Copie da janela do app.py"><button class="button small" id="toggleKeyBtn" type="button" style="white-space:nowrap">👁 Mostrar</button></div></div>
   <div class="connect-actions" style="display:flex;gap:8px;flex-wrap:wrap"><button class="button" id="savePcBtn">＋ Salvar PC</button><button class="button primary" id="connectBtn">⟶ Conectar</button><button class="button danger hidden" id="disconnectBtn">Desconectar</button><button class="button small" id="deletePcBtn">Excluir PC</button></div>
  </div>
  <div class="help"><strong>Como conectar:</strong>
@@ -42,7 +52,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
    <li><strong>Neste mesmo PC:</strong> use <code>http://127.0.0.1:5000</code>; a chave não é necessária.</li>
    <li><strong>Em outro aparelho da rede:</strong> abra <code>http://IP-DO-PC:5000</code> e cole a chave mostrada na janela do app.py.</li>
   </ol>
-  <span id="connectionHelp">Os valores atuais são simulados. Conecte o agente para exibir métricas reais.</span></div>
+  <span id="connectionHelp">Os valores atuais são simulados. Conecte o agente para exibir métricas reais.</span>
+  <div class="install-hint hidden" id="iosHint">📱 Para instalar no iPhone: toque em <strong>Compartilhar</strong> (quadrado com seta) e depois em <strong>Adicionar à Tela de Início</strong>.</div></div>
 </section>
 
 <div class="section-heading"><h2>02 / Desempenho em tempo real</h2><span class="eyebrow" id="lastUpdated">ÚLTIMA LEITURA: --:--:--</span></div>
@@ -363,6 +374,26 @@ $("refreshBtn").addEventListener("click", () => {
 });
 $("clearLogsBtn").addEventListener("click", () => { $("terminal").replaceChildren(); log("Terminal limpo.", "info"); });
 window.addEventListener("resize", drawChart);
+
+$("toggleKeyBtn").addEventListener("click", () => {
+  const input = $("apiKey"), mostrar = input.type === "password";
+  input.type = mostrar ? "text" : "password";
+  $("toggleKeyBtn").textContent = mostrar ? "🙈 Ocultar" : "👁 Mostrar";
+});
+
+/* ---------- Instalar como app ---------- */
+const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+let installEvent = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvent = e; $("installBtn").classList.remove("hidden"); });
+$("installBtn").addEventListener("click", async () => {
+  if (!installEvent) return;
+  installEvent.prompt();
+  const choice = await installEvent.userChoice.catch(() => null);
+  if (choice && choice.outcome === "accepted") log("App instalado! Procure o ícone NEXUS na tela inicial.", "success");
+  installEvent = null; $("installBtn").classList.add("hidden");
+});
+window.addEventListener("appinstalled", () => { $("installBtn").classList.add("hidden"); });
+if (!isStandalone() && /iphone|ipad|ipod/i.test(navigator.userAgent)) $("iosHint").classList.remove("hidden");
 
 /* ---------- Início ---------- */
 async function init() {
