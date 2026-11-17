@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<title>NEXUS // PC Monitor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap');
+:root{--bg:#080b12;--panel:#101621;--border:#202c3c;--text:#e6edf7;--muted:#7d8ca3;--cyan:#54e7f2;--green:#50f5a4;--red:#ff647c;--yellow:#ffc66d;--purple:#ae92ff;--mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;--sans:'Inter',system-ui,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,#182b42 0%,transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);font-size:13px}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.app{max-width:1500px;margin:auto;padding:26px}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+
+/* cabeçalho */
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:23px;border-bottom:1px solid var(--border);margin-bottom:25px}
+.brand{display:flex;align-items:center;gap:13px}
+.brand-icon{display:grid;place-items:center;width:43px;height:43px;border:1px solid #285365;border-radius:12px;background:#102633;color:var(--cyan);font-size:22px}
+h1{margin:0;font-size:19px;letter-spacing:2px}
+.subtitle{color:var(--muted);font-size:10px;margin-top:5px;letter-spacing:1.5px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.status-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:30px;padding:9px 13px;color:var(--muted);font-size:11px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+.dot.green{background:var(--green);box-shadow:0 0 10px #50f5a477}
+.dot.red{background:var(--red)}
+.dot.yellow{background:var(--yellow)}
+
+/* botões e campos */
+.button{padding:10px 14px;color:var(--text);background:#182333;border:1px solid #304157;border-radius:7px;transition:.2s}
+.button:hover:not(:disabled){border-color:var(--cyan)}
+.button.primary{background:#10333b;border-color:#286b78;color:var(--cyan)}
+.button.danger{color:var(--red);border-color:#62303d;background:#26141b}
+.button.small{padding:7px 10px;font-size:11px}
+label{display:block;color:var(--muted);font-size:11px;margin-bottom:8px}
+input,select{width:100%;padding:11px 12px;background:#080d15;color:var(--text);border:1px solid #29374a;border-radius:7px;outline:none}
+input:focus,select:focus{border-color:var(--cyan)}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.seg button{background:transparent;color:var(--muted);border:0;padding:5px 10px;font-size:10px;font-family:var(--mono)}
+.seg button.on{background:#10333b;color:var(--cyan)}
+
+/* títulos e painéis */
+.section-heading{display:flex;justify-content:space-between;align-items:center;margin:0 0 13px;gap:10px}
+.section-heading h2{margin:0;font-size:11px;letter-spacing:1.8px;font-weight:600;text-transform:uppercase}
+.eyebrow{color:var(--muted);font:10px var(--mono)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:19px;min-width:0}
+.connection-panel{border:1px solid var(--border);background:linear-gradient(130deg,#101b29,#0c111a);border-radius:12px;padding:20px;margin-bottom:25px}
+.connection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;align-items:end}
+.connect-actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.help{color:var(--muted);font-size:11px;line-height:1.7;margin-top:14px}
+.help strong{color:var(--cyan);font-weight:500}
+
+/* visão geral de vários PCs */
+#fleetSection{margin-bottom:25px}
+.fleet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.fleet-card{text-align:left;color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:14px;display:grid;gap:8px;transition:.2s}
+.fleet-card:hover{border-color:var(--cyan)}
+.fleet-card.active{border-color:#286b78;background:#0f2430}
+.fleet-top{display:flex;align-items:center;gap:8px}
+.fleet-sub{color:var(--muted);font:10px var(--mono);overflow-wrap:anywhere}
+.fleet-health{font:11px var(--mono);color:var(--green)}
+.fleet-off{font:11px var(--mono);color:var(--red)}
+.mini{display:grid;grid-template-columns:30px 1fr 34px;align-items:center;gap:8px;font:10px var(--mono);color:var(--muted)}
+.mini .progress{margin:0}
+
+/* cartões de métricas */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:15px}
+.metric{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:18px;min-width:0}
+.metric-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.metric-label{color:var(--muted);font-size:11px}
+.metric-icon{display:grid;place-items:center;width:31px;height:31px;border-radius:8px;background:#182433;color:var(--cyan);font-size:15px}
+.metric-value{font:500 27px var(--mono);letter-spacing:-1.5px;margin:20px 0 7px;white-space:nowrap}
+.metric-unit{font-size:12px;color:var(--muted);letter-spacing:0}
+.metric-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font-size:10px}
+.metric-foot span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress{height:4px;background:#263242;border-radius:10px;overflow:hidden;margin:15px 0 12px}
+.progress span{display:block;height:100%;width:0%;background:var(--cyan);transition:width .5s}
+.progress.green span{background:var(--green)}
+.progress.yellow span{background:var(--yellow)}
+.progress.purple span{background:var(--purple)}
+.progress.warn span{background:var(--yellow)}
+.progress.bad span{background:var(--red)}
+
+/* gráfico, informações, processos */
+.content-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr);gap:15px;margin-top:15px}
+.two-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}
+.chart-wrap{position:relative;height:230px;margin:15px 0 10px}
+canvas{width:100%;height:100%;display:block}
+.chart-legend{display:flex;gap:14px;align-items:center;color:var(--muted);font-size:10px;flex-wrap:wrap}
+.legend-dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:6px}
+.info-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border:0}
+.info-label{color:var(--muted);flex:none}
+.info-value{font-family:var(--mono);text-align:right;overflow-wrap:anywhere}
+.cores{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px}
+.core{font:10px var(--mono);color:var(--muted)}
+.core .progress{margin:6px 0 0}
+.disk-row{display:grid;gap:6px;padding:10px 0;border-bottom:1px solid var(--border);font:11px var(--mono)}
+.disk-row:last-child{border:0}
+.disk-row .top{display:flex;justify-content:space-between;gap:10px}
+.disk-row .progress{margin:0}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:10px;letter-spacing:1px}
+th,td{padding:11px 9px;border-bottom:1px solid var(--border)}
+td{font:11px var(--mono)}
+tbody tr:last-child td{border-bottom:0}
+.tag{padding:4px 7px;border-radius:4px;font-size:9px}
+.tag.ok{background:#123427;color:var(--green)}
+.tag.warn{background:#392c18;color:var(--yellow)}
+.stack{display:grid;gap:15px;align-content:start}
+.terminal{height:170px;overflow:auto;background:#080c12;border:1px solid var(--border);border-radius:7px;padding:12px;font:10px/1.9 var(--mono);color:#92a5bb}
+.log-line{overflow-wrap:anywhere}
+.log-time{color:#52667d}
+.log-info{color:var(--cyan)}
+.log-success{color:var(--green)}
+.log-error{color:var(--red)}
+.log-warn{color:var(--yellow)}
+.notice{padding:12px;border:1px solid #4b3e26;background:#1d1912;border-radius:7px;color:#d5bd8c;line-height:1.6;font-size:11px;margin-top:15px}
+.stress-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end}
+.stress-grid .actions{grid-column:1/-1;display:flex;gap:8px}
+footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid var(--border);margin-top:25px;padding-top:18px;color:var(--muted);font:10px var(--mono)}
+
+/* modo quiosque */
+body.kiosk #connectionPanel,body.kiosk #eventsPanel,body.kiosk #stressPanel,body.kiosk footer,body.kiosk .kiosk-hide{display:none!important}
+body.kiosk .app{padding:18px}
+body.kiosk .metric-value{font-size:34px}
+body.kiosk .two-grid,body.kiosk .content-grid{grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr)}
+
+@media(max-width:1000px){.content-grid,.two-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.app{padding:15px}header{align-items:flex-start}.header-right .status-pill{display:none}.brand-icon{width:37px;height:37px}h1{font-size:16px}.grid{gap:9px}.metric{padding:12px}.metric-value{font-size:21px}.connection-grid{grid-template-columns:1fr}.panel,.connection-panel{padding:14px}.chart-wrap{height:190px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">⌘</div>
+    <div><h1>NEXUS <span style="color:var(--cyan)">MONITOR</span></h1><div class="subtitle">SYSTEM INTELLIGENCE / V 2.0.0</div></div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill"><span class="dot" id="headerDot"></span><span id="headerStatus">INICIANDO</span></div>
+    <button class="button small" id="kioskBtn" title="Tela cheia com rodízio automático entre os PCs">⛶ Quiosque</button>
+    <button class="button small kiosk-hide" id="csvBtn" title="Baixa o histórico em CSV">⭳ CSV</button>
+    <button class="button small kiosk-hide" id="refreshBtn">↻ Atualizar</button>
+  </div>
+</header>
+
+<section class="connection-panel" id="connectionPanel">
+  <div class="section-heading"><h2>01 / Computadores e conexão</h2><span class="eyebrow" id="connectionMode">--</span></div>
+  <div class="connection-grid">
+    <div><label for="pcSelect">Computadores cadastrados</label><select id="pcSelect"><option value="">Selecione um computador...</option></select></div>
+    <div><label for="pcName">Nome do computador</label><input id="pcName" type="text" placeholder="Ex.: PC do laboratório"></div>
+    <div><label for="endpoint">Endereço do agente</label><input id="endpoint" type="text" placeholder="http://192.168.1.100:5000"></div>
+    <div><label for="apiKey">Chave de acesso (se o agente exigir)</label><input id="apiKey" type="password" autocomplete="off" placeholder="Chave configurada no agente"></div>
+    <div class="connect-actions">
+      <button class="button" id="savePcBtn">＋ Salvar PC</button>
+      <button class="button primary" id="connectBtn">⟶ Conectar</button>
+      <button class="button danger hidden" id="disconnectBtn">Desconectar</button>
+      <button class="button" id="demoBtn">▶ Modo demonstração</button>
+      <button class="button small" id="deletePcBtn">Excluir PC</button>
+    </div>
+  </div>
+  <div class="help"><strong>Dica:</strong> abra este painel pelo endereço do próprio agente (ex.: <span class="muted">http://IP-DO-PC:5000</span>); assim o navegador não bloqueia a conexão. A lista de PCs (e as chaves salvas) ficam apenas neste navegador.<br><span id="connectionHelp"></span></div>
+</section>
+
+<section id="fleetSection" class="hidden kiosk-hide-if-single">
+  <div class="section-heading"><h2>Todos os computadores</h2><span class="eyebrow">CLIQUE PARA ABRIR</span></div>
+  <div class="fleet-grid" id="fleetGrid"></div>
+</section>
+
+<div class="section-heading"><h2>02 / Desempenho em tempo real</h2><span class="eyebrow" id="lastUpdated">ÚLTIMA LEITURA: --:--:--</span></div>
+<section class="grid" id="cards"></section>
+
+<section class="content-grid">
+  <article class="panel">
+    <div class="section-heading">
+      <h2>Histórico de utilização</h2>
+      <div class="chart-legend">
+        <span><i class="legend-dot" style="background:var(--cyan)"></i>CPU</span>
+        <span><i class="legend-dot" style="background:var(--purple)"></i>RAM</span>
+        <div class="seg" id="windowSeg"><button data-pts="30" class="on">1 min</button><button data-pts="150">5 min</button><button data-pts="450">15 min</button></div>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="chart" aria-label="Gráfico de utilização de CPU e RAM"></canvas></div>
+    <div class="metric-foot"><span>Passe o mouse sobre o gráfico para ver os valores</span><span id="chartMode">--</span></div>
+  </article>
+  <article class="panel">
+    <div class="section-heading"><h2>Informações do sistema</h2><span class="eyebrow">HOST INFO</span></div>
+    <div id="info"></div>
+  </article>
+</section>
+
+<section class="two-grid">
+  <article class="panel">
+    <div class="section-heading"><h2>Núcleos do processador</h2><span class="eyebrow" id="coreCount">--</span></div>
+    <div class="cores" id="cores"></div>
+  </article>
+  <article class="panel">
+    <div class="section-heading"><h2>Discos</h2><span class="eyebrow" id="diskIo">E/S: --</span></div>
+    <div id="disks"></div>
+  </article>
+</section>
+
+<section class="two-grid">
+  <article class="panel">
+    <div class="section-heading">
+      <h2>Processos principais</h2>
+      <div class="chart-legend"><span class="eyebrow" id="processCount">0 PROCESSOS</span><div class="seg" id="sortSeg"><button data-sort="cpu" class="on">CPU</button><button data-sort="ram">RAM</button></div></div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>PROCESSO</th><th>CPU %</th><th>RAM MB</th><th>STATUS</th></tr></thead><tbody id="processTable"></tbody></table></div>
+  </article>
+  <div class="stack">
+    <article class="panel hidden" id="stressPanel">
+      <div class="section-heading"><h2>Teste de estresse</h2><span class="eyebrow" id="stressMode">--</span></div>
+      <div class="stress-grid">
+        <div><label for="stressLevel">Intensidade</label><select id="stressLevel"><option value="leve">Leve (25% dos núcleos)</option><option value="medio" selected>Média (50%)</option><option value="alto">Alta (100%)</option></select></div>
+        <div><label for="stressSeconds">Duração</label><select id="stressSeconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></div>
+        <div class="actions"><button class="button primary" id="stressStart">▶ Iniciar</button><button class="button danger" id="stressStop">■ Parar</button></div>
+      </div>
+      <div class="help" id="stressStatus"></div>
+    </article>
+    <article class="panel" id="eventsPanel">
+      <div class="section-heading"><h2>Eventos do sistema</h2><button class="button small" id="clearLogsBtn">Limpar</button></div>
+      <div class="terminal" id="terminal" aria-live="polite"></div>
+      <div class="notice"><strong>Segurança:</strong> use apenas em computadores que você tem autorização para monitorar. O monitor é somente leitura; o teste de estresse só existe se o agente for iniciado com <code>--stress</code> e exige chave. Não exponha o agente à internet.</div>
+    </article>
+  </div>
+</section>
+
+<footer><span>NEXUS MONITOR // CLIENTE WEB</span><span id="footerConnection">API: --</span><span>ATUALIZAÇÃO AUTOMÁTICA: 2 S</span></footer>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ------------------------------------------------------------------ */
+/* Configuração e estado                                              */
+/* ------------------------------------------------------------------ */
+const POLL_MS = 2000, RETRY_MS = 4000, FLEET_MS = 5000, KIOSK_MS = 15000, HISTORY_MAX = 450;
+const STORE_KEY = "nexus-monitor-pcs-v2", OLD_KEY = "nexus-monitor-pcs";
+const WINDOW_LABEL = {30: "1 min", 150: "5 min", 450: "15 min"};
+const $ = id => document.getElementById(id);
+
+const state = {
+  mode: "demo",            // demo | connecting | live | off
+  reconnecting: false,
+  target: null, timer: null, reqId: 0, failures: 0,
+  history: [], windowPts: 30, procSort: "cpu",
+  demoTick: 0, demoSpikeUntil: 0, demoTemp: 46,
+  levels: {}, fleet: {}, stressEnabled: false,
+  kiosk: false, kioskTimer: null, wakeLock: null, lastData: null,
+};
+
+let savedPCs = loadPCs();
+function loadPCs() {
+  for (const key of [STORE_KEY, OLD_KEY]) {
+    try {
+      const arr = JSON.parse(localStorage.getItem(key) || "null");
+      if (Array.isArray(arr)) {
+        return arr.filter(p => p && typeof p.name === "string" && typeof p.endpoint === "string")
+                  .map(p => ({name: p.name, endpoint: p.endpoint, key: typeof p.key === "string" ? p.key : ""}));
+      }
+    } catch { /* ignora */ }
+  }
+  return [];
+}
+function persistPCs() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(savedPCs)); return true; } catch { return false; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Utilidades                                                         */
+/* ------------------------------------------------------------------ */
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Number(v) || 0));
+const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+function fmt(v, d = 1) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toLocaleString("pt-BR", {minimumFractionDigits: d, maximumFractionDigits: d}) : "--";
+}
+function uptimeText(s) {
+  if (!Number.isFinite(Number(s))) return "--";
+  s = Math.max(0, Math.floor(Number(s)));
+  return `${Math.floor(s / 86400)}d ${Math.floor(s % 86400 / 3600)}h ${Math.floor(s % 3600 / 60)}m`;
+}
+const level = (v, warn, bad) => (v >= bad ? 2 : v >= warn ? 1 : 0);
+const LEVEL_TEXT = ["Normal", "Elevado", "Muito alto"];
+
+function log(message, type = "info") {
+  const term = $("terminal"), line = el("div", "log-line");
+  line.append(el("span", "log-time", `[${new Date().toLocaleTimeString("pt-BR")}] `), el("span", `log-${type}`, message));
+  term.appendChild(line);
+  while (term.children.length > 100) term.removeChild(term.firstChild);
+  term.scrollTop = term.scrollHeight;
+}
+
+/* ------------------------------------------------------------------ */
+/* Comunicação com o agente                                           */
+/* ------------------------------------------------------------------ */
+function normalizeEndpoint(raw) {
+  let s = String(raw || "").trim();
+  if (!s) throw new Error("Informe o endereço do agente.");
+  if (!/^https?:\/\//i.test(s)) s = "http://" + s;
+  let u;
+  try { u = new URL(s); } catch { throw new Error("Endereço inválido. Ex.: http://192.168.1.100:5000"); }
+  if (u.username || u.password || u.search || u.hash) throw new Error("Endereço inválido. Ex.: http://192.168.1.100:5000");
+  return u.origin + u.pathname.replace(/\/+$/, "");
+}
+
+async function apiFetch(pc, path, {method = "GET", body, timeout = 4500} = {}) {
+  const base = normalizeEndpoint(pc.endpoint);
+  const headers = {Accept: "application/json"};
+  if (pc.key) headers.Authorization = `Bearer ${pc.key}`;
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), timeout);
+  try {
+    const res = await fetch(base + path, {
+      method, headers, signal: ctl.signal, cache: "no-store",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    if (res.status === 401) throw new Error("Chave de acesso ausente ou incorreta.");
+    if (!res.ok) {
+      let msg = `o agente respondeu HTTP ${res.status}`;
+      try { const j = await res.json(); if (j.error) msg = j.error; } catch { /* sem corpo */ }
+      throw new Error(msg);
+    }
+    return await res.json();
+  } catch (e) {
+    if (e.name === "AbortError") throw new Error("tempo limite excedido");
+    if (e instanceof TypeError) throw new Error("sem resposta do agente (confira IP, firewall, CORS e se o agente está ativo)");
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Cartões de métricas                                                */
+/* ------------------------------------------------------------------ */
+const CARDS = [
+  {id: "cpu",  label: "Uso de CPU",      icon: "◈", color: "var(--cyan)",   bar: "",       unit: "%",    foot: "Processador"},
+  {id: "ram",  label: "Memória RAM",     icon: "▤", color: "var(--purple)", bar: "purple", unit: "%",    foot: "-- / -- GB"},
+  {id: "disk", label: "Disco principal", icon: "▣", color: "var(--yellow)", bar: "yellow", unit: "%",    foot: "Espaço utilizado"},
+  {id: "net",  label: "Rede",            icon: "⌁", color: "var(--green)",  bar: "green",  unit: "MB/s", foot: "Recebimento"},
+  {id: "temp", label: "Temperatura",     icon: "☀", color: "var(--red)",    bar: "",       unit: "°C",   foot: "Sensor"},
+  {id: "health", label: "Saúde geral",   icon: "♥", color: "var(--green)",  bar: "green",  unit: "/100", foot: "Sem dados"},
+];
+function buildCards() {
+  const box = $("cards");
+  for (const c of CARDS) {
+    const card = el("article", "metric");
+    card.innerHTML =
+      `<div class="metric-top"><span class="metric-label">${c.label}</span><span class="metric-icon" style="color:${c.color}">${c.icon}</span></div>` +
+      `<div class="metric-value"><span id="${c.id}Value">--</span><span class="metric-unit" id="${c.id}Unit"> ${c.unit}</span></div>` +
+      `<div class="progress ${c.bar}" id="${c.id}Track"><span id="${c.id}Bar"></span></div>` +
+      `<div class="metric-foot"><span id="${c.id}Sub">${c.foot}</span><span id="${c.id}State">Sem dados</span></div>`;
+    box.appendChild(card);
+  }
+}
+function setCard(id, {value, unit, pct, lvl = 0, sub, stateText}) {
+  $(id + "Value").textContent = value;
+  if (unit !== undefined) $(id + "Unit").textContent = unit ? " " + unit : "";
+  $(id + "Bar").style.width = clamp(pct) + "%";
+  const track = $(id + "Track");
+  track.classList.toggle("warn", lvl === 1);
+  track.classList.toggle("bad", lvl === 2);
+  if (sub !== undefined) $(id + "Sub").textContent = sub;
+  if (stateText !== undefined) $(id + "State").textContent = stateText;
+}
+
+/* ------------------------------------------------------------------ */
+/* Renderização dos dados                                             */
+/* ------------------------------------------------------------------ */
+function render(d) {
+  state.lastData = d;
+  const cpu = clamp(d.cpu_percent), ram = clamp(d.ram_percent), disk = clamp(d.disk_percent);
+  const rx = num(d.net_rx_mbs), tx = num(d.net_tx_mbs);
+  const temp = typeof d.temperature_c === "number" ? d.temperature_c : null;
+  const health = d.health || {score: 0, label: "--", issues: []};
+
+  setCard("cpu", {value: fmt(cpu), pct: cpu, lvl: level(cpu, 75, 90), sub: d.cpu_freq_mhz ? `${fmt(d.cpu_freq_mhz / 1000, 2)} GHz` : "Processador", stateText: LEVEL_TEXT[level(cpu, 75, 90)]});
+  setCard("ram", {value: fmt(ram), pct: ram, lvl: level(ram, 80, 90), sub: `${fmt(d.ram_used_gb)} / ${fmt(d.ram_total_gb)} GB`, stateText: LEVEL_TEXT[level(ram, 80, 90)]});
+  setCard("disk", {value: fmt(disk), pct: disk, lvl: level(disk, 85, 95), sub: `${fmt(d.disk_used_gb)} / ${fmt(d.disk_total_gb)} GB`, stateText: LEVEL_TEXT[level(disk, 85, 95)]});
+  setCard("net", {value: fmt(rx, 2), pct: (rx + tx) / 12.5 * 100, sub: `↑ ${fmt(tx, 2)} MB/s enviado`, stateText: "Recebimento"});
+  if (temp !== null) {
+    const l = level(temp, 75, 90);
+    setCard("temp", {value: fmt(temp, 0), unit: "°C", pct: temp, lvl: l, sub: d.gpu ? `GPU ${fmt(d.gpu.temperature_c, 0)} °C` : "Sensor da CPU", stateText: LEVEL_TEXT[l]});
+  } else {
+    setCard("temp", {value: "N/D", unit: "", pct: 0, sub: "Sensor indisponível neste sistema", stateText: "--"});
+  }
+  const hl = health.score >= 75 ? 0 : health.score >= 50 ? 1 : 2;
+  setCard("health", {value: String(health.score), pct: health.score, lvl: hl, sub: health.issues[0] ? (health.issues.length > 1 ? `${health.issues[0]} (+${health.issues.length - 1})` : health.issues[0]) : "Nenhum problema detectado", stateText: health.label});
+  $("healthSub").title = health.issues.join("\n");
+
+  $("lastUpdated").textContent = "ÚLTIMA LEITURA: " + new Date((d.timestamp || Date.now() / 1000) * 1000).toLocaleTimeString("pt-BR");
+  pushHistory({t: d.timestamp, cpu, ram, rx, tx, temp});
+  renderInfo(d);
+  renderCores(d.cpu_cores_percent || []);
+  renderDisks(d);
+  renderProcesses(d);
+  updateStress(d);
+  checkLevels({CPU: [cpu, 75, 90, "%"], RAM: [ram, 80, 90, "%"], Disco: [disk, 85, 95, "%"], Temperatura: [temp, 75, 90, " °C"]});
+  drawChart();
+}
+
+function pushHistory(p) {
+  const last = state.history[state.history.length - 1];
+  if (last && p.t <= last.t) return;           // leitura repetida
+  state.history.push(p);
+  if (state.history.length > HISTORY_MAX) state.history.shift();
+}
+
+function checkLevels(checks) {
+  for (const [name, [value, warn, bad, unit]] of Object.entries(checks)) {
+    if (value === null || value === undefined) continue;
+    const lvl = level(value, warn, bad), prev = state.levels[name] || 0;
+    if (lvl === prev) continue;
+    state.levels[name] = lvl;
+    if (lvl === 2) log(`${name} em nível crítico: ${fmt(value, 0)}${unit}`, "error");
+    else if (lvl === 1) log(`${name} elevado: ${fmt(value, 0)}${unit}`, "warn");
+    else log(`${name} voltou ao normal: ${fmt(value, 0)}${unit}`, "success");
+  }
+}
+
+function renderInfo(d) {
+  const gpu = d.gpu ? `${d.gpu.name} · ${fmt(d.gpu.util_percent, 0)}%` : "Não detectada (NVIDIA)";
+  const bat = d.battery ? `${d.battery.percent}% ${d.battery.plugged ? "(na tomada)" : "(na bateria)"}` : "Sem bateria";
+  const rows = [
+    ["Computador", d.hostname], ["Sistema", d.os], ["Processador", d.cpu_name],
+    ["Núcleos", `${d.physical_cores ?? "--"} físicos / ${d.logical_cores ?? "--"} lógicos`],
+    ["Memória total", d.ram_total_gb != null ? `${fmt(d.ram_total_gb)} GB` : "--"],
+    ["Memória virtual", d.swap_percent != null ? `${fmt(d.swap_percent)} % em uso` : "--"],
+    ["Placa de vídeo", gpu], ["Bateria", bat], ["Endereço IP", d.ip || "--"], ["Tempo ligado", uptimeText(d.uptime_seconds)],
+  ];
+  const box = $("info");
+  box.replaceChildren();
+  for (const [label, value] of rows) {
+    const row = el("div", "info-row");
+    row.append(el("span", "info-label", label), el("span", "info-value", String(value ?? "--")));
+    box.appendChild(row);
+  }
+}
+
+function renderCores(cores) {
+  const box = $("cores");
+  $("coreCount").textContent = `${cores.length} NÚCLEOS LÓGICOS`;
+  if (box.children.length !== cores.length) {
+    box.replaceChildren();
+    cores.forEach((_, i) => {
+      const c = el("div", "core"), t = el("div"), bar = el("div", "progress"), s = el("span");
+      t.append(el("span", null, `C${i} `), el("span", null, "0%"));
+      bar.append(s); c.append(t, bar); box.appendChild(c);
+    });
+  }
+  cores.forEach((v, i) => {
+    const c = box.children[i], pct = clamp(v);
+    c.querySelector("div span:last-child").textContent = fmt(pct, 0) + "%";
+    c.querySelector(".progress span").style.width = pct + "%";
+    c.querySelector(".progress").classList.toggle("warn", pct >= 75 && pct < 90);
+    c.querySelector(".progress").classList.toggle("bad", pct >= 90);
+  });
+}
+
+function renderDisks(d) {
+  const box = $("disks");
+  box.replaceChildren();
+  for (const disk of d.disks || []) {
+    const row = el("div", "disk-row"), top = el("div", "top"), bar = el("div", "progress yellow"), s = el("span");
+    top.append(el("span", null, disk.mount), el("span", "muted", `${fmt(disk.used_gb)} / ${fmt(disk.total_gb)} GB · ${fmt(disk.percent, 0)}%`));
+    s.style.width = clamp(disk.percent) + "%";
+    bar.classList.toggle("warn", disk.percent >= 85 && disk.percent < 95);
+    bar.classList.toggle("bad", disk.percent >= 95);
+    bar.append(s); row.append(top, bar); box.appendChild(row);
+  }
+  if (!box.children.length) box.appendChild(el("div", "muted", "Nenhum disco informado."));
+  $("diskIo").textContent = d.disk_read_mbs != null ? `LEITURA ${fmt(d.disk_read_mbs, 1)} · GRAVAÇÃO ${fmt(d.disk_write_mbs, 1)} MB/s` : "E/S: indisponível";
+}
+
+function renderProcesses(d) {
+  const tbody = $("processTable"), list = Array.isArray(d.processes) ? d.processes : [];
+  tbody.replaceChildren();
+  $("processCount").textContent = `${d.process_count ?? list.length} PROCESSOS`;
+  if (!list.length) {
+    const r = tbody.insertRow(), c = r.insertCell();
+    c.colSpan = 4; c.className = "muted"; c.style.textAlign = "center"; c.textContent = "Nenhum processo informado pelo agente.";
+    return;
+  }
+  const key = state.procSort === "cpu" ? "cpu_percent" : "ram_mb";
+  const top = [...list].sort((a, b) => num(b[key]) - num(a[key])).slice(0, 10);
+  for (const p of top) {
+    const r = tbody.insertRow(), name = r.insertCell();
+    name.textContent = String(p.name || "desconhecido");
+    if (p.count > 1) name.append(el("span", "muted", ` ×${p.count}`));
+    r.insertCell().textContent = fmt(p.cpu_percent);
+    r.insertCell().textContent = fmt(p.ram_mb, 0);
+    const high = num(p.cpu_percent) >= 40, tag = el("span", "tag " + (high ? "warn" : "ok"), high ? "ALTO" : "OK");
+    r.insertCell().appendChild(tag);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Gráfico (canvas) com dica ao passar o mouse                        */
+/* ------------------------------------------------------------------ */
+const SERIES = [{key: "cpu", color: "#54e7f2", fill: true}, {key: "ram", color: "#ae92ff"}];
+function drawChart(hoverX) {
+  const canvas = $("chart"), ctx = canvas.getContext("2d"), rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(rect.width * dpr); canvas.height = Math.round(rect.height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = rect.width, H = rect.height, L = 34, R = 8, T = 10, B = 22, cw = W - L - R, ch = H - T - B;
+  ctx.clearRect(0, 0, W, H);
+  ctx.font = "10px IBM Plex Mono, monospace";
+  ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = T + ch * i / 4;
+    ctx.strokeStyle = "#263242"; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(W - R, y); ctx.stroke();
+    ctx.fillStyle = "#73839a"; ctx.fillText(`${100 - i * 25}%`, L - 6, y);
+  }
+  const pts = state.history.slice(-state.windowPts), n = pts.length;
+  const step = cw / Math.max(state.windowPts - 1, 1);
+  const xAt = i => L + cw - (n - 1 - i) * step, yAt = v => T + ch * (1 - clamp(v) / 100);
+  if (n >= 2) {
+    for (const s of SERIES) {
+      ctx.beginPath();
+      pts.forEach((p, i) => (i ? ctx.lineTo(xAt(i), yAt(p[s.key])) : ctx.moveTo(xAt(i), yAt(p[s.key]))));
+      ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke();
+      if (s.fill) {
+        ctx.lineTo(xAt(n - 1), T + ch); ctx.lineTo(xAt(0), T + ch); ctx.closePath();
+        const g = ctx.createLinearGradient(0, T, 0, T + ch);
+        g.addColorStop(0, "rgba(84,231,242,.22)"); g.addColorStop(1, "rgba(84,231,242,0)");
+        ctx.fillStyle = g; ctx.fill();
+      }
+    }
+  }
+  ctx.textBaseline = "alphabetic"; ctx.fillStyle = "#73839a";
+  ctx.textAlign = "left"; ctx.fillText("-" + WINDOW_LABEL[state.windowPts], L, H - 5);
+  ctx.textAlign = "right"; ctx.fillText("agora", W - R, H - 5);
+
+  if (hoverX != null && n) {
+    const i = Math.max(0, Math.min(n - 1, Math.round(n - 1 - (L + cw - hoverX) / step))), p = pts[i], x = xAt(i);
+    ctx.strokeStyle = "#7d8ca3"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, T); ctx.lineTo(x, T + ch); ctx.stroke();
+    const text = `${new Date(p.t * 1000).toLocaleTimeString("pt-BR")}  CPU ${fmt(p.cpu, 0)}%  RAM ${fmt(p.ram, 0)}%`;
+    const w = ctx.measureText(text).width + 14, bx = Math.min(Math.max(x - w / 2, L), W - R - w);
+    ctx.fillStyle = "#0c111a"; ctx.strokeStyle = "#304157"; ctx.fillRect(bx, T + 2, w, 20); ctx.strokeRect(bx, T + 2, w, 20);
+    ctx.fillStyle = "#e6edf7"; ctx.textAlign = "left"; ctx.fillText(text, bx + 7, T + 16);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Estado da interface                                                */
+/* ------------------------------------------------------------------ */
+function updateUI() {
+  const m = state.mode, rc = state.reconnecting;
+  const map = {
+    demo: ["yellow", "MODO DEMONSTRAÇÃO"], connecting: ["yellow", "CONECTANDO..."],
+    live: rc ? ["red", "SEM RESPOSTA"] : ["green", "CONECTADO"], off: ["red", "DESCONECTADO"],
+  };
+  const [dot, text] = map[m];
+  $("headerDot").className = "dot " + dot;
+  $("headerStatus").textContent = text + (m === "live" && state.target ? " · " + (state.target.name || state.target.endpoint) : "");
+  $("connectionMode").textContent = text;
+  $("connectBtn").classList.toggle("hidden", m === "live");
+  $("disconnectBtn").classList.toggle("hidden", m !== "live");
+  $("demoBtn").classList.toggle("hidden", m === "demo");
+  $("chartMode").textContent = m === "demo" ? "SIMULAÇÃO" : m === "live" ? "DADOS REAIS" : "SEM DADOS";
+  $("footerConnection").textContent = "API: " + (m === "live" ? (rc ? "SEM RESPOSTA" : "CONECTADA") : m === "demo" ? "DEMONSTRAÇÃO" : "DESCONECTADA");
+  $("connectionHelp").textContent = m === "demo" ? "Os valores são simulados. Conecte a um agente para ver dados reais."
+    : m === "live" ? "Conexão estabelecida. Os valores vêm do computador selecionado."
+    : m === "connecting" ? "Conectando ao agente..."
+    : "Desconectado. Confira o IP, se o agente está ativo, o firewall e a chave de acesso.";
+  updateStressVisibility();
+  renderFleet();
+}
+
+function stopAll() { clearTimeout(state.timer); state.timer = null; state.reqId++; }
+
+/* ---------------- conexão real ---------------- */
+async function connect(pc) {
+  let endpoint;
+  try { endpoint = normalizeEndpoint(pc.endpoint); } catch (e) { log(e.message, "error"); return; }
+  pc = {...pc, endpoint};
+  stopAll();
+  const id = state.reqId;
+  state.mode = "connecting"; state.reconnecting = false; updateUI();
+  log(`Conectando a ${pc.name || endpoint}...`);
+  try {
+    const ping = await apiFetch(pc, "/api/ping", {timeout: 3500});
+    if (id !== state.reqId) return;
+    state.stressEnabled = !!ping.stress_enabled;
+    const [hist, data] = await Promise.all([apiFetch(pc, "/api/history"), apiFetch(pc, "/api/metrics")]);
+    if (id !== state.reqId) return;
+    state.target = pc; state.mode = "live"; state.failures = 0; state.levels = {};
+    state.history = (hist.points || []).map(p => ({...p})).slice(-HISTORY_MAX);
+    updateUI(); render(data);
+    log("Conexão estabelecida.", "success");
+    schedule(id, POLL_MS);
+  } catch (e) {
+    if (id !== state.reqId) return;
+    state.mode = "off"; updateUI();
+    log(`Falha na conexão: ${e.message}`, "error");
+    if (location.protocol === "https:" && /^http:\/\//i.test(endpoint) && !/localhost|127\.0\.0\.1/.test(endpoint)) {
+      log(`Este painel está em HTTPS e o navegador bloqueia agentes HTTP. Abra o painel por ${endpoint}/ em vez do GitHub Pages.`, "warn");
+    }
+  }
+}
+function schedule(id, ms) { clearTimeout(state.timer); state.timer = setTimeout(() => poll(id), ms); }
+async function poll(id) {
+  if (id !== state.reqId || state.mode !== "live") return;
+  try {
+    const d = await apiFetch(state.target, "/api/metrics");
+    if (id !== state.reqId) return;
+    if (state.reconnecting) { state.reconnecting = false; updateUI(); log("Conexão restabelecida.", "success"); }
+    state.failures = 0; render(d);
+  } catch (e) {
+    if (id !== state.reqId) return;
+    state.failures++;
+    if (state.failures === 1) log(`Falha ao atualizar: ${e.message}`, "warn");
+    if (state.failures === 3) { state.reconnecting = true; updateUI(); log("Sem resposta do agente. Tentando reconectar...", "error"); }
+  }
+  schedule(id, state.reconnecting ? RETRY_MS : POLL_MS);
+}
+function disconnect() {
+  stopAll(); state.mode = "off"; state.reconnecting = false; updateUI();
+  log("Monitoramento desconectado.", "warn");
+}
+function refreshNow() {
+  if (state.mode === "live") { stopAll(); const id = state.reqId; poll(id); }
+  else if (state.mode === "demo") { render(demoData(Date.now() / 1000)); log("Dados simulados atualizados.", "info"); }
+}
+
+/* ---------------- modo demonstração ---------------- */
+function demoData(ts) {
+  const t = ++state.demoTick;
+  const spike = t < state.demoSpikeUntil || (t % 120 >= 100 && t % 120 < 108);
+  const cpu = clamp(spike ? 88 + Math.random() * 10 : 22 + Math.sin(t / 3.4) * 8 + Math.random() * 5);
+  const ram = clamp(52 + Math.cos(t / 5.1) * 3 + Math.random() * 1.5 + (spike ? 6 : 0));
+  state.demoTemp += ((spike ? 86 : 46) - state.demoTemp) * 0.25;
+  const cores = Array.from({length: 8}, () => clamp(cpu + (Math.random() - .5) * 25));
+  const processes = [
+    {name: "chrome.exe", cpu_percent: 5.2, ram_mb: 1250, count: 14}, {name: "Code.exe", cpu_percent: 3.7, ram_mb: 840, count: 6},
+    {name: "System", cpu_percent: 1.1, ram_mb: 240, count: 1}, {name: "explorer.exe", cpu_percent: .8, ram_mb: 180, count: 1},
+  ];
+  if (spike) processes.push({name: "stress.exe", cpu_percent: 72, ram_mb: 120, count: 4});
+  const temp = Math.round(state.demoTemp * 10) / 10, disk = 63;
+  return {
+    timestamp: ts, cpu_percent: cpu, cpu_cores_percent: cores, cpu_freq_mhz: 3600 + (spike ? 700 : 0),
+    ram_percent: ram, ram_used_gb: ram / 100 * 16, ram_total_gb: 16, swap_percent: 12,
+    disk_percent: disk, disk_used_gb: 320, disk_total_gb: 512,
+    disks: [{mount: "C:\\", percent: 63, used_gb: 320, total_gb: 512}, {mount: "D:\\", percent: 41, used_gb: 410, total_gb: 1000}],
+    disk_read_mbs: 4.2, disk_write_mbs: 1.8, net_rx_mbs: Math.max(.1, 1.2 + Math.random() * 5), net_tx_mbs: Math.random() * 1.5,
+    temperature_c: temp, gpu: null, battery: null, process_count: 187, processes,
+    hostname: "DEMO-PC", os: "Windows 11 (simulado)", cpu_name: "CPU de demonstração", logical_cores: 8, physical_cores: 4,
+    ip: "192.168.0.50", uptime_seconds: 86400 + t * 2, health: demoHealth(cpu, ram, disk, temp), stress: {active: spike},
+  };
+}
+function demoHealth(cpu, ram, disk, temp) {
+  let score = 100, critical = false; const issues = [];
+  const chk = (v, w, b, pw, pb, text) => {
+    if (v >= b) { score -= pb; critical = true; issues.push(`${text} em nível crítico (${fmt(v, 0)})`); }
+    else if (v >= w) { score -= pw; issues.push(`${text} elevado (${fmt(v, 0)})`); }
+  };
+  chk(cpu, 75, 90, 8, 20, "Uso de CPU"); chk(ram, 80, 90, 10, 25, "Uso de memória");
+  chk(disk, 85, 95, 10, 25, "Ocupação do disco"); chk(temp, 75, 90, 10, 25, "Temperatura");
+  score = Math.max(score, 0);
+  if (critical) score = Math.min(score, 65);
+  return {score, label: score >= 90 ? "Excelente" : score >= 75 ? "Boa" : score >= 50 ? "Atenção" : "Crítica", issues};
+}
+function startDemo() {
+  stopAll();
+  const id = state.reqId;
+  state.mode = "demo"; state.reconnecting = false; state.levels = {}; state.history = [];
+  const now = Date.now() / 1000;
+  for (let i = 29; i >= 1; i--) { const d = demoData(now - i * 2); pushHistory({t: d.timestamp, cpu: d.cpu_percent, ram: d.ram_percent, rx: d.net_rx_mbs, tx: d.net_tx_mbs, temp: d.temperature_c}); }
+  updateUI(); render(demoData(now));
+  const loop = () => {
+    state.timer = setTimeout(() => {
+      if (id !== state.reqId || state.mode !== "demo") return;
+      render(demoData(Date.now() / 1000)); loop();
+    }, POLL_MS);
+  };
+  loop();
+}
+
+/* ------------------------------------------------------------------ */
+/* Teste de estresse                                                  */
+/* ------------------------------------------------------------------ */
+function updateStressVisibility() {
+  const show = state.mode === "demo" || (state.mode === "live" && state.stressEnabled);
+  $("stressPanel").classList.toggle("hidden", !show);
+  $("stressMode").textContent = state.mode === "demo" ? "SIMULADO" : "REAL · CONTROLADO";
+  $("stressLevel").disabled = $("stressSeconds").disabled = state.mode === "demo";
+}
+function updateStress(d) {
+  const s = d.stress || {};
+  const active = !!s.active;
+  $("stressStart").disabled = active && state.mode === "live";
+  $("stressStatus").textContent = state.mode === "demo"
+    ? (active ? "Pico de CPU simulado em andamento." : "Simula um pico de CPU para demonstrar o gráfico, a nota de saúde e os eventos.")
+    : (active ? `Teste em execução: ${s.remaining ?? 0} s restantes. Pode ser interrompido a qualquer momento.` : "Gera carga de CPU de forma controlada (prioridade baixa e duração limitada).");
+}
+$("stressStart").addEventListener("click", async () => {
+  if (state.mode === "demo") { state.demoSpikeUntil = state.demoTick + 8; log("Pico de CPU simulado por cerca de 16 s.", "warn"); return; }
+  try {
+    await apiFetch(state.target, "/api/stress", {method: "POST", body: {level: $("stressLevel").value, seconds: Number($("stressSeconds").value)}});
+    log("Teste de estresse iniciado.", "warn"); refreshNow();
+  } catch (e) { log(`Não foi possível iniciar o teste: ${e.message}`, "error"); }
+});
+$("stressStop").addEventListener("click", async () => {
+  if (state.mode === "demo") { state.demoSpikeUntil = 0; return; }
+  try { await apiFetch(state.target, "/api/stress/stop", {method: "POST", body: {}}); log("Teste de estresse interrompido.", "info"); refreshNow(); }
+  catch (e) { log(`Falha ao interromper: ${e.message}`, "error"); }
+});
+
+/* ------------------------------------------------------------------ */
+/* Vários computadores                                                */
+/* ------------------------------------------------------------------ */
+function renderPCSelector(selected = "") {
+  const sel = $("pcSelect");
+  sel.replaceChildren(new Option("Selecione um computador...", ""));
+  savedPCs.forEach(pc => sel.appendChild(new Option(pc.name, pc.endpoint)));
+  sel.value = savedPCs.some(p => p.endpoint === selected) ? selected : "";
+}
+function selectPC(pc) {
+  $("pcName").value = pc.name; $("endpoint").value = pc.endpoint; $("apiKey").value = pc.key || "";
+  renderPCSelector(pc.endpoint);
+}
+function currentPC() {
+  let endpoint;
+  try { endpoint = normalizeEndpoint($("endpoint").value); } catch (e) { log(e.message, "error"); return null; }
+  const host = endpoint.replace(/^https?:\/\//, "");
+  return {name: $("pcName").value.trim() || host, endpoint, key: $("apiKey").value.trim()};
+}
+function miniBar(label, pct) {
+  const row = el("div", "mini"), bar = el("div", "progress"), s = el("span");
+  s.style.width = pct + "%";
+  bar.classList.toggle("warn", pct >= 75 && pct < 90); bar.classList.toggle("bad", pct >= 90);
+  bar.append(s); row.append(el("span", null, label), bar, el("span", null, fmt(pct, 0) + "%"));
+  return row;
+}
+function renderFleet() {
+  $("fleetSection").classList.toggle("hidden", savedPCs.length === 0);
+  const box = $("fleetGrid");
+  box.replaceChildren();
+  for (const pc of savedPCs) {
+    const f = state.fleet[pc.endpoint];
+    const current = state.mode === "live" && state.target && state.target.endpoint === pc.endpoint;
+    const card = el("button", "fleet-card" + (current ? " active" : ""));
+    card.type = "button";
+    const top = el("div", "fleet-top");
+    top.append(el("span", "dot " + (f ? (f.ok ? "green" : "red") : "")), el("strong", null, pc.name));
+    card.append(top, el("div", "fleet-sub", pc.endpoint.replace(/^https?:\/\//, "")));
+    if (f && f.ok) {
+      card.append(miniBar("CPU", clamp(f.d.cpu_percent)), miniBar("RAM", clamp(f.d.ram_percent)));
+      if (f.d.health) card.append(el("div", "fleet-health", `Saúde ${f.d.health.score} · ${f.d.health.label}`));
+    } else {
+      card.append(el("div", "fleet-off", f ? f.msg : "Verificando..."));
+    }
+    card.addEventListener("click", () => { selectPC(pc); connect(pc); });
+    box.appendChild(card);
+  }
+}
+async function pollFleet() {
+  if (!savedPCs.length || document.hidden) return;
+  await Promise.allSettled(savedPCs.map(async pc => {
+    try { state.fleet[pc.endpoint] = {ok: true, d: await apiFetch(pc, "/api/metrics", {timeout: 3000})}; }
+    catch (e) { state.fleet[pc.endpoint] = {ok: false, msg: e.message}; }
+  }));
+  renderFleet();
+}
+
+/* ------------------------------------------------------------------ */
+/* Quiosque (tela cheia + rodízio entre os PCs)                       */
+/* ------------------------------------------------------------------ */
+async function keepAwake(on) {
+  try {
+    if (on && navigator.wakeLock) state.wakeLock = await navigator.wakeLock.request("screen");
+    else if (state.wakeLock) { await state.wakeLock.release(); state.wakeLock = null; }
+  } catch { /* não suportado em HTTP puro */ }
+}
+function setKiosk(on, fullscreen = true) {
+  state.kiosk = on;
+  document.body.classList.toggle("kiosk", on);
+  $("kioskBtn").textContent = on ? "✕ Sair do quiosque" : "⛶ Quiosque";
+  clearInterval(state.kioskTimer); state.kioskTimer = null;
+  if (on) {
+    if (fullscreen) document.documentElement.requestFullscreen?.().catch(() => {});
+    state.kioskTimer = setInterval(() => {
+      if (savedPCs.length < 2) return;
+      const i = savedPCs.findIndex(p => state.target && p.endpoint === state.target.endpoint);
+      const next = savedPCs[(i + 1) % savedPCs.length];
+      selectPC(next); connect(next);
+    }, KIOSK_MS);
+    log("Modo quiosque ativado. Pressione Esc para sair.", "info");
+  } else if (document.fullscreenElement) {
+    document.exitFullscreen?.().catch(() => {});
+  }
+  keepAwake(on);
+  setTimeout(drawChart, 100);
+}
+
+/* ------------------------------------------------------------------ */
+/* Exportar CSV                                                       */
+/* ------------------------------------------------------------------ */
+function exportCSV() {
+  if (!state.history.length) { log("Ainda não há leituras para exportar.", "warn"); return; }
+  const rows = ["hora;cpu_percent;ram_percent;rede_rx_mbs;rede_tx_mbs;temperatura_c"];
+  for (const p of state.history) {
+    rows.push([new Date(p.t * 1000).toLocaleString("pt-BR"), p.cpu, p.ram, p.rx ?? "", p.tx ?? "", p.temp ?? ""].join(";").replace(/\./g, ","));
+  }
+  const host = (state.lastData && state.lastData.hostname) || "pc";
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "");
+  const a = el("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + rows.join("\r\n")], {type: "text/csv;charset=utf-8"}));
+  a.download = `nexus-${host}-${stamp}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  log(`Histórico exportado (${state.history.length} leituras).`, "success");
+}
+
+/* ------------------------------------------------------------------ */
+/* Eventos da interface                                               */
+/* ------------------------------------------------------------------ */
+$("savePcBtn").addEventListener("click", () => {
+  const pc = currentPC();
+  if (!pc) return;
+  const existing = savedPCs.find(p => p.endpoint === pc.endpoint);
+  if (existing) Object.assign(existing, pc); else savedPCs.push(pc);
+  if (!persistPCs()) { log("Não foi possível salvar a lista neste navegador.", "error"); return; }
+  renderPCSelector(pc.endpoint); renderFleet(); pollFleet();
+  log(`Computador "${pc.name}" salvo neste navegador.`, "success");
+});
+$("pcSelect").addEventListener("change", () => {
+  const pc = savedPCs.find(p => p.endpoint === $("pcSelect").value);
+  if (pc) { selectPC(pc); connect(pc); }
+});
+$("deletePcBtn").addEventListener("click", () => {
+  const endpoint = $("pcSelect").value;
+  const pc = savedPCs.find(p => p.endpoint === endpoint);
+  if (!pc) { log("Selecione um computador cadastrado para excluir.", "warn"); return; }
+  savedPCs = savedPCs.filter(p => p.endpoint !== endpoint);
+  delete state.fleet[endpoint];
+  if (!persistPCs()) { log("Não foi possível atualizar a lista salva.", "error"); return; }
+  if (state.mode === "live" && state.target && state.target.endpoint === endpoint) disconnect();
+  renderPCSelector(); renderFleet();
+  $("pcName").value = ""; $("apiKey").value = "";
+  log(`Computador "${pc.name}" removido da lista.`, "warn");
+});
+$("connectBtn").addEventListener("click", () => { const pc = currentPC(); if (pc) connect(pc); });
+$("disconnectBtn").addEventListener("click", disconnect);
+$("demoBtn").addEventListener("click", () => { startDemo(); log("Modo demonstração: nenhum dado real está sendo coletado.", "warn"); });
+$("refreshBtn").addEventListener("click", refreshNow);
+$("csvBtn").addEventListener("click", exportCSV);
+$("kioskBtn").addEventListener("click", () => setKiosk(!state.kiosk));
+$("clearLogsBtn").addEventListener("click", () => { $("terminal").replaceChildren(); log("Terminal limpo.", "info"); });
+$("windowSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.windowPts = Number(b.dataset.pts);
+  [...$("windowSeg").children].forEach(x => x.classList.toggle("on", x === b));
+  drawChart();
+});
+$("sortSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.procSort = b.dataset.sort;
+  [...$("sortSeg").children].forEach(x => x.classList.toggle("on", x === b));
+  if (state.lastData) renderProcesses(state.lastData);
+});
+const chartEl = $("chart");
+chartEl.addEventListener("mousemove", e => drawChart(e.offsetX));
+chartEl.addEventListener("mouseleave", () => drawChart());
+window.addEventListener("resize", () => drawChart());
+document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && state.kiosk) setKiosk(false); });
+
+/* ------------------------------------------------------------------ */
+/* Início                                                             */
+/* ------------------------------------------------------------------ */
+async function init() {
+  buildCards();
+  renderPCSelector();
+  const onAgent = location.protocol.startsWith("http") && !/github\.io$/.test(location.hostname);
+  $("endpoint").value = onAgent ? location.origin : "http://127.0.0.1:5000";
+  log("NEXUS Monitor iniciado.", "success");
+  startDemo();
+  if (onAgent) {
+    try {
+      const ping = await apiFetch({endpoint: location.origin}, "/api/ping", {timeout: 2500});
+      if (ping.app === "nexus-monitor") {
+        log("Agente detectado neste endereço.", "success");
+        if (!ping.auth_required) connect({name: "Este computador", endpoint: location.origin, key: ""});
+        else log("O agente exige chave de acesso: digite-a e clique em Conectar.", "warn");
+      }
+    } catch { /* painel aberto fora do agente: segue em demonstração */ }
+  }
+  pollFleet();
+  setInterval(pollFleet, FLEET_MS);
+  if (/[?&]kiosk\b/.test(location.search)) setKiosk(true, false);
+}
+init();
+})();
+</script>
+</body>
+</html>
