@@ -33,7 +33,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
   <div><label for="pcSelect">Computadores cadastrados</label><select id="pcSelect"><option value="">Selecione um computador...</option></select></div>
   <div><label for="pcName">Nome do computador</label><input id="pcName" type="text" placeholder="Ex.: PC principal"></div>
   <div><label for="endpoint">Endereço do agente (app.py)</label><input id="endpoint" type="text" inputmode="url" spellcheck="false" value="http://127.0.0.1:5000" placeholder="http://192.168.1.100:5000"></div>
-  <div><label for="apiKey">Chave de acesso (só para acessar de outro aparelho)</label><input id="apiKey" type="password" autocomplete="off" placeholder="Copie da janela do app.py"></div>
+  <div><label for="apiKey">Chave de acesso (só para acessar de outro aparelho)</label><input id="apiKey" type="text" autocomplete="off" placeholder="Copie da janela do app.py"></div>
   <div class="connect-actions" style="display:flex;gap:8px;flex-wrap:wrap"><button class="button" id="savePcBtn">＋ Salvar PC</button><button class="button primary" id="connectBtn">⟶ Conectar</button><button class="button danger hidden" id="disconnectBtn">Desconectar</button><button class="button small" id="deletePcBtn">Excluir PC</button></div>
  </div>
  <div class="help"><strong>Como conectar:</strong>
